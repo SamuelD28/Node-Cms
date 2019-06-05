@@ -1,0 +1,25 @@
+{
+  "name": "nodecms",
+  "version": "1.0.0",
+  "description": "Custom Cms build on Node",
+  "main": "app.js",
+  "scripts": {},
+  "author": "samuel dube",
+  "license": "MIT",
+  "dependencies": {
+    "@types/cookie-parser": "^1.4.1",
+    "@types/dotenv": "^6.1.1",
+    "@types/express": "^4.16.1",
+    "@types/jsonwebtoken": "^8.3.2",
+    "@types/mongoose": "^5.3.27",
+    "body-parser": "^1.19.0",
+    "cookie-parser": "^1.4.4",
+    "dotenv": "^7.0.0",
+    "express": "^4.16.4",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.5.4",
+    "nodemon": "^1.18.11",
+    "ts-node": "^8.2.0",
+    "typescript": "^3.4.3"
+  }
+}
