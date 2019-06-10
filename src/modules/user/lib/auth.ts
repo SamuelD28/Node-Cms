@@ -1,4 +1,4 @@
-import { User, IUser } from '../user/userMD';
+import { User, IUser } from './model';
 import { Request, NextFunction, Response } from 'express';
 
 export default function Auth(req: Request, res: Response, next: NextFunction) {

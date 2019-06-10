@@ -153,6 +153,11 @@ UserSchema.methods.RemoveToken = function () {
 
 UserSchema.statics.FindByToken = function (token: string, cb: (err: string | null, user: IUser | null) => void) {
     Jwt.verify(token, <string>process.env.SECRET, function (err, decoded) {
+
+        if (err) {
+            cb(err.message, null);
+        }
+
         User.findOne({ "_id": decoded, "token": token })
             .then((user) => {
                 if (user) {

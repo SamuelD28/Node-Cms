@@ -1,7 +1,7 @@
 import { Document, Model } from 'mongoose';
 import { Request, Response, IRouterMatcher, RequestHandler, Router } from 'express';
 import Express from 'express';
-import Auth from '../modules/middleware/auth';
+import Auth from '../../user/lib/auth';
 
 export interface IBehaviorHandler {
     RouterMatcher: IRouterMatcher<Router>;
