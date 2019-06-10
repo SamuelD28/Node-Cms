@@ -1,6 +1,6 @@
 import { User } from './model';
 import { Url } from './url';
-import { CrudApi } from '../../database/mongo/CrudApi';
+import { CrudApi } from '../../database/lib/mongo/api';
 import { Request, Response } from 'express';
 
 export default new class Api extends CrudApi {
