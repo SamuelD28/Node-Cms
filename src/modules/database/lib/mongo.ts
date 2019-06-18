@@ -1,6 +1,9 @@
-import { Document, Model } from 'mongoose';
-import { Request, Response } from 'express';
-import { BaseApi } from '../BaseApi';
+import { Request, Response, RequestHandler, Router } from 'express';
+import Express from 'express';
+import Auth from '../../user/lib/auth';
+import mongodb from 'mongodb';
+import { IBehaviorHandler } from './IBehaviorHandler';
+import { IRequestResponse } from './IRequestResponse';
 
 /**
  * @description Abstract class that implements basic crud
@@ -9,9 +12,12 @@ import { BaseApi } from '../BaseApi';
  * @constructor Constructor needs the document model to implement the fonctionality
  *
  * @author Samuel Dube
+ * @author Samuel Colassin
  */
-export class MongoApi extends BaseApi {
-    protected Document: Model<Document, {}>;
+export abstract class CrudApi {
+    protected Collection: string;
+    protected Routing: Router = Express.Router();
+    protected Behaviors: { [index: string]: IBehaviorHandler };
 
     /**
      * @description Constructor used to create
@@ -21,9 +27,72 @@ export class MongoApi extends BaseApi {
      * @param routes Routes to add to the api
      * @param publicKeys Optionnal. Public keys of the document. Default set everything to public
      */
-    constructor(document: Model<Document, {}>) {
-        super();
-        this.Document = document;
+    constructor(collection: string) {
+        this.Collection = collection;
+
+        // Basic handlers for api
+        this.Post = this.Post.bind(this);
+        this.Get = this.Get.bind(this);
+        this.Put = this.Put.bind(this);
+        this.Delete = this.Delete.bind(this);
+        this.GetAll = this.GetAll.bind(this);
+
+        this.AddBehavior = this.AddBehavior.bind(this);
+        this.SendResponse = this.SendResponse.bind(this);
+        this.Behaviors = {
+            "POST": {
+                RouterMatcher: this.Routing.post.bind(this.Routing),
+                RequestHandler: this.Post
+            },
+            "GET": {
+                RouterMatcher: this.Routing.get.bind(this.Routing),
+                RequestHandler: this.Get
+            },
+            "PUT": {
+                RouterMatcher: this.Routing.put.bind(this.Routing),
+                RequestHandler: this.Put
+            },
+            "DELETE": {
+                RouterMatcher: this.Routing.delete.bind(this.Routing),
+                RequestHandler: this.Delete
+            },
+            "GETALL": {
+                RouterMatcher: this.Routing.get.bind(this.Routing),
+                RequestHandler: this.GetAll
+            }
+        }
+    }
+
+    /**
+     * @description Method that add a new behavior to the child api
+     *
+     * @param route Route use to access the new behavior
+     * @param requestType Type of the request to access the new bahavior
+     * @param secured Secured behavior
+     * @param handler Optionnal handler for the behavior
+     */
+    protected AddBehavior(route: string,
+        requestType: string,
+        secured: boolean,
+        handler?: RequestHandler) {
+
+        let routerMatcher = this.Behaviors[requestType.toUpperCase()].RouterMatcher;
+        let requestHandler = (handler) ? handler : this.Behaviors[requestType].RequestHandler;
+
+        if (secured) {
+            routerMatcher(route, Auth, requestHandler);
+        } else {
+            routerMatcher(route, requestHandler);
+        }
+    }
+
+    /**
+     * @description Get the routes generated for this api.
+     *
+     * @returns Express Router
+     */
+    public GetRoutes(): Router {
+        return this.Routing;
     }
 
     /**
@@ -36,6 +105,9 @@ export class MongoApi extends BaseApi {
      */
     public GetAll(req: Request, res: Response)
         : void {
+
+        let collection = mongodb.connect()
+
         this.Document.find()
             .then((documents) => {
                 if (!documents) {
@@ -177,5 +249,21 @@ export class MongoApi extends BaseApi {
                         }
                     });
             });
+    }
+
+    /**
+     * @description Method used to generate a response by the server in the form of
+     * a json document.
+     *
+     * @param res Response object use to send the response
+     * @param response Response data that will be sent to the caller
+     */
+    public SendResponse(res: Response, response: IRequestResponse) {
+        res.status(response.status).json({
+            status: response.status,
+            data: response.data,
+            message: response.message || "",
+            error: response.error || ""
+        });
     }
 }

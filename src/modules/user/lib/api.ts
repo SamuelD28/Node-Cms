@@ -1,7 +1,6 @@
-import { User } from './model';
-import { Url } from './url';
-import { CrudApi } from '../../database/lib/mongo/api';
-import { Request, Response } from 'express';
+import User from './model';
+import { CrudApi } from '../../database/lib/mongo';
+import { Request, Response } from 'express-serve-static-core';
 
 export default new class Api extends CrudApi {
     constructor() {
@@ -16,9 +15,6 @@ export default new class Api extends CrudApi {
         this.AddBehavior("/:id", "DELETE", true);
         this.AddBehavior("/", "GETALL", true);
         this.AddBehavior("/", "POST", false);
-
-
-
         this.AddBehavior("/generateLink/:email", "POST", false, this.generateLink);
     }
 
@@ -36,10 +32,6 @@ export default new class Api extends CrudApi {
                 if (user !== null) {
                     let userId = user.id;
                     let tempUrl: string = `http://${process.env.IP}/user/reset/${userId}`;
-                    Url.create(tempUrl)
-                        .then((url) => {
-                            urlToEmail = url.Url;
-                        });
                 }
             })
             .catch((err) => {
