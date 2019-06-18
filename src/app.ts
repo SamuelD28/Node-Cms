@@ -7,7 +7,7 @@
 // -- Imports --//
 import express from "express";
 import dotenv from "dotenv";
-import mongo, { MongoClient } from 'mongodb';
+import { MongoClient } from 'mongodb';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import { UserApi } from './modules/user';
@@ -45,3 +45,5 @@ app.listen(8888, "localhost", (error: string) => {
         console.log("Starting server on port 8888");
     }
 });
+
+export default client;
