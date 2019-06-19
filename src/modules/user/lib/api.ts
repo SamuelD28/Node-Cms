@@ -1,6 +1,7 @@
 import User from './model';
-import { CrudApi } from '../../database/lib/mongo';
+import { CrudApi } from '../../api/lib/mongo';
 import { Request, Response } from 'express-serve-static-core';
+import client from '';
 
 export default new class Api extends CrudApi {
     constructor() {
