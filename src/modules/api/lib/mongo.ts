@@ -1,9 +1,9 @@
-import { Request, Response, RequestHandler, Router } from 'express';
 import Express from 'express';
 import Auth from '../../user/lib/auth';
-import mongodb from 'mongodb';
+import { Request, Response, RequestHandler, Router } from 'express';
 import { IBehaviorHandler } from './interface/IBehaviorHandler';
 import { IRequestResponse } from './interface/IRequestResponse';
+import { MongoDatabase } from '../../database';
 
 /**
  * @description Abstract class that implements basic crud
@@ -16,6 +16,7 @@ import { IRequestResponse } from './interface/IRequestResponse';
  */
 export abstract class CrudApi {
     protected Collection: string;
+    protected Database: MongoDatabase;
     protected Routing: Router = Express.Router();
     protected Behaviors: { [index: string]: IBehaviorHandler };
 
@@ -27,8 +28,9 @@ export abstract class CrudApi {
      * @param routes Routes to add to the api
      * @param publicKeys Optionnal. Public keys of the document. Default set everything to public
      */
-    constructor(collection: string) {
+    constructor(database: MongoDatabase, collection: string) {
         this.Collection = collection;
+        this.Database = database;
 
         // Basic handlers for api
         this.Post = this.Post.bind(this);
@@ -106,22 +108,20 @@ export abstract class CrudApi {
     public GetAll(req: Request, res: Response)
         : void {
 
-        let collection = mongodb.connect()
-
-        this.Document.find()
-            .then((documents) => {
-                if (!documents) {
-                    throw new Error("No Document found");
-                }
-                this.SendResponse(res,
-                    {
-                        status: 200,
-                        data: document
-                    });
-            })
-            .catch((err) => {
-                res.json(err);
-            });
+        // this.Document.find()
+        //     .then((documents) => {
+        //         if (!documents) {
+        //             throw new Error("No Document found");
+        //         }
+        //         this.SendResponse(res,
+        //             {
+        //                 status: 200,
+        //                 data: document
+        //             });
+        //     })
+        //     .catch((err) => {
+        //         res.json(err);
+        //     });
     }
 
     /**
@@ -133,20 +133,20 @@ export abstract class CrudApi {
     */
     public Get(req: Request, res: Response)
         : void {
-        this.Document.findById(req.params.id)
-            .then((document) => {
-                if (!document) {
-                    throw new Error("No Document found");
-                }
-                this.SendResponse(res,
-                    {
-                        status: 200,
-                        data: document
-                    });
-            })
-            .catch((err) => {
-                res.json(err);
-            });
+        // this.Document.findById(req.params.id)
+        //     .then((document) => {
+        //         if (!document) {
+        //             throw new Error("No Document found");
+        //         }
+        //         this.SendResponse(res,
+        //             {
+        //                 status: 200,
+        //                 data: document
+        //             });
+        //     })
+        //     .catch((err) => {
+        //         res.json(err);
+        //     });
     }
 
     /**
@@ -158,29 +158,29 @@ export abstract class CrudApi {
      */
     public Post(req: Request, res: Response)
         : void {
-        this.Document.create(req.body)
-            .then((document) => {
-                if (!document) {
-                    throw new Error("No Document found");
-                }
-                this.SendResponse(res,
-                    {
-                        status: 200,
-                        data: document
-                    });
-            })
-            .catch((err: Error) => {
-                this.SendResponse(res,
-                    {
-                        status: 404,
-                        data: null,
-                        error: {
-                            type: err.name,
-                            message: err.message,
-                            parameters: "no parameters"
-                        }
-                    });
-            });
+        // this.Document.create(req.body)
+        //     .then((document) => {
+        //         if (!document) {
+        //             throw new Error("No Document found");
+        //         }
+        //         this.SendResponse(res,
+        //             {
+        //                 status: 200,
+        //                 data: document
+        //             });
+        //     })
+        //     .catch((err: Error) => {
+        //         this.SendResponse(res,
+        //             {
+        //                 status: 404,
+        //                 data: null,
+        //                 error: {
+        //                     type: err.name,
+        //                     message: err.message,
+        //                     parameters: "no parameters"
+        //                 }
+        //             });
+        //     });
     };
 
     /**
@@ -192,29 +192,29 @@ export abstract class CrudApi {
      */
     public Put(req: Request, res: Response)
         : void {
-        this.Document.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
-            .then((document) => {
-                if (!document) {
-                    throw new Error("No Document found");
-                }
-                this.SendResponse(res,
-                    {
-                        status: 200,
-                        data: document
-                    });
-            })
-            .catch((err) => {
-                this.SendResponse(res,
-                    {
-                        status: 404,
-                        data: null,
-                        error: {
-                            type: err.name,
-                            message: err.message,
-                            parameters: "no parameters"
-                        }
-                    });
-            });
+        // this.Document.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
+        //     .then((document) => {
+        //         if (!document) {
+        //             throw new Error("No Document found");
+        //         }
+        //         this.SendResponse(res,
+        //             {
+        //                 status: 200,
+        //                 data: document
+        //             });
+        //     })
+        //     .catch((err) => {
+        //         this.SendResponse(res,
+        //             {
+        //                 status: 404,
+        //                 data: null,
+        //                 error: {
+        //                     type: err.name,
+        //                     message: err.message,
+        //                     parameters: "no parameters"
+        //                 }
+        //             });
+        //     });
     }
 
     /**
@@ -226,29 +226,29 @@ export abstract class CrudApi {
      */
     public Delete(req: Request, res: Response)
         : void {
-        this.Document.findByIdAndDelete(req.params.id)
-            .then((document) => {
-                if (!document) {
-                    throw new Error("No Document found");
-                }
-                this.SendResponse(res,
-                    {
-                        status: 200,
-                        data: document
-                    });
-            })
-            .catch((err) => {
-                this.SendResponse(res,
-                    {
-                        status: 404,
-                        data: null,
-                        error: {
-                            type: err.name,
-                            message: err.message,
-                            parameters: "no parameters"
-                        }
-                    });
-            });
+        // this.Document.findByIdAndDelete(req.params.id)
+        //     .then((document) => {
+        //         if (!document) {
+        //             throw new Error("No Document found");
+        //         }
+        //         this.SendResponse(res,
+        //             {
+        //                 status: 200,
+        //                 data: document
+        //             });
+        //     })
+        //     .catch((err) => {
+        //         this.SendResponse(res,
+        //             {
+        //                 status: 404,
+        //                 data: null,
+        //                 error: {
+        //                     type: err.name,
+        //                     message: err.message,
+        //                     parameters: "no parameters"
+        //                 }
+        //             });
+        //     });
     }
 
     /**
