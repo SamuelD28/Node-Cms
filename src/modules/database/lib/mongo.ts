@@ -1,22 +1,39 @@
 import { MongoClient, Db, Collection } from 'mongodb';
 
+/**
+ * @description Utility class for talking with a mongo
+ * database.
+ *
+ * @author Samuel Dube
+ */
 class MongoDatabase {
     private ConnectionString: string;
     private DbName: string;
     private Client: MongoClient | null;
 
+    /**
+     * @description Base constructor for the class. Lazy initialise
+     * the mongo client.
+     *
+     * @param connectionString Connection string used to connect to the database
+     * @param dbName Name of the database to access
+     */
     constructor(connectionString: string, dbName: string) {
         this.DbName = dbName;
         this.ConnectionString = connectionString;
         this.Client = null;
-        this.GetDb(() => console.log("Connection test"));
-        this.CreateCollection("Test");
-        this.InsertInCollection("Test", { Hey: "Test" });
-        this.UpdateInCollection("Test", { Hey: "Test" }, { $set: { Hey: "Miel" } });
     }
 
+    /**
+     * @description Method that returns a database object of the specified
+     * database.
+     *
+     * @param action Callback function to pass the database object to.
+     */
     public async GetDb(action: (db: Db) => void)
         : Promise<boolean> {
+
+        //Lazy initialisation
         if (this.Client === null) {
             this.Client = await new MongoClient(
                 this.ConnectionString,
@@ -28,6 +45,13 @@ class MongoDatabase {
         return true;
     }
 
+    /**
+     * @description Method that return a collection object from a specific
+     * database.
+     *
+     * @param name Name of the collection to retrieve
+     * @param action Callback function to pass the collection object to.
+     */
     public GetCollection(name: string, action: (collection: Collection) => void)
         : boolean {
         this.GetDb((db) => {
@@ -36,6 +60,11 @@ class MongoDatabase {
         return true;
     }
 
+    /**
+     * @description Method that create a new collection inside a database
+     *
+     * @param name Name of the collection to create
+     */
     public CreateCollection(name: string)
         : boolean {
         this.GetDb((db) => {
@@ -44,6 +73,12 @@ class MongoDatabase {
         return true;
     }
 
+    /**
+     * @description Methodd that insert a single or multiple set of data inside a collection
+     *
+     * @param name Name of the collection to insert the data into
+     * @param data Data to insert inside the collection
+     */
     public InsertInCollection(name: string, data: Object | Array<any>)
         : boolean {
         this.GetCollection(name, (collection) => {
@@ -56,6 +91,13 @@ class MongoDatabase {
         return true;
     }
 
+    /**
+     * @description Method that delete a single or multiple object
+     * inside a collection based on a mongo condition
+     *
+     * @param name Name of the collection to remove the data from
+     * @param condition Condition for removing the data
+     */
     public DeleteInCollection(name: string, condition: Object)
         : boolean {
         this.GetCollection(name, (collection) => {
@@ -64,6 +106,14 @@ class MongoDatabase {
         return true;
     }
 
+    /**
+     * @description Method that update a single or muliple data set
+     * inside a collection
+     *
+     * @param name Name of the collection
+     * @param condition Condition for updating a data set
+     * @param data New data to override the old data with
+     */
     public UpdateInCollection(name: string, condition: Object, data: Object)
         : boolean {
         this.GetCollection(name, (collection) => {
