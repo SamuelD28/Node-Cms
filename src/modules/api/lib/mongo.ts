@@ -14,8 +14,9 @@ import { MongoDatabase } from '../../database';
  * @author Samuel Dube
  * @author Samuel Colassin
  */
-export abstract class CrudApi {
-    protected Collection: string;
+export abstract class CrudApi<T>{
+    public CollectionName: string;
+    protected CollectionModel: { new(...args: any[]): T };
     protected DbAdapter: MongoDatabase;
     protected Routing: Router = Express.Router();
     protected Behaviors: { [index: string]: IBehaviorHandler };
@@ -28,9 +29,14 @@ export abstract class CrudApi {
      * @param routes Routes to add to the api
      * @param publicKeys Optionnal. Public keys of the document. Default set everything to public
      */
-    constructor(database: MongoDatabase, collection: string) {
-        this.Collection = collection;
+    constructor(
+        database: MongoDatabase,
+        collectionName: string,
+        collectionModel: { new(...args: any[]): T }) {
+
+        this.CollectionName = collectionName;
         this.DbAdapter = database;
+        this.CollectionModel = collectionModel;
 
         // Basic handlers for api
         this.Post = this.Post.bind(this);
@@ -108,7 +114,7 @@ export abstract class CrudApi {
     public GetAll(req: Request, res: Response)
         : void {
 
-        this.DbAdapter.GetDocumentsInCollection(this.Collection)
+        this.DbAdapter.GetDocumentsInCollection(this.CollectionName)
             .then((documents) => {
                 if (!documents) {
                     throw new Error("No Document Found");
@@ -132,7 +138,7 @@ export abstract class CrudApi {
         : void {
 
         this.DbAdapter.GetDocumentInCollection(
-            this.Collection,
+            this.CollectionName,
             { _id: req.params.id })
             .then((document) => {
                 if (!document) {
@@ -156,8 +162,10 @@ export abstract class CrudApi {
     public Post(req: Request, res: Response)
         : void {
 
+        let newDocument = new this.CollectionModel(req.body.params);
+
         this.DbAdapter.InsertInCollection(
-            this.Collection,
+            this.CollectionName,
             req.params.body)
             .then((document) => {
                 if (!document) {
@@ -182,7 +190,7 @@ export abstract class CrudApi {
         : void {
 
         this.DbAdapter.UpdateInCollection(
-            this.Collection,
+            this.CollectionName,
             { _id: req.params.id },
             req.params.body)
             .then((document) => {
@@ -208,7 +216,7 @@ export abstract class CrudApi {
         : void {
 
         this.DbAdapter.DeleteInCollection(
-            this.Collection,
+            this.CollectionName,
             { _id: req.params.id })
             .then((document) => {
                 if (!document) {
