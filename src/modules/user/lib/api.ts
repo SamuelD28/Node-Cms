@@ -1,21 +1,23 @@
 import User from './model';
 import { CrudApi } from '../../api/lib/mongo';
 import { Request, Response } from 'express-serve-static-core';
-export default new class Api {
-    // constructor() {
-    //     super();
-    //     this.Login = this.Login.bind(this);
-    //     this.Logout = this.Logout.bind(this);
+import { MongoDatabase } from '../../database';
+export default class Api extends CrudApi {
 
-    //     this.AddBehavior("/login", "POST", false, this.Login);
-    //     this.AddBehavior("/logout", "GET", true, this.Logout);
-    //     this.AddBehavior("/:id", "GET", true);
-    //     this.AddBehavior("/:id", "PUT", true);
-    //     this.AddBehavior("/:id", "DELETE", true);
-    //     this.AddBehavior("/", "GETALL", true);
-    //     this.AddBehavior("/", "POST", false);
-    //     this.AddBehavior("/generateLink/:email", "POST", false, this.generateLink);
-    // }
+    constructor(database: MongoDatabase, collection: string) {
+        super(database, collection);
+        // this.Login = this.Login.bind(this);
+        // this.Logout = this.Logout.bind(this);
+
+        // this.AddBehavior("/login", "POST", false, this.Login);
+        // this.AddBehavior("/logout", "GET", true, this.Logout);
+        this.AddBehavior("/:id", "GET", true);
+        this.AddBehavior("/:id", "PUT", true);
+        this.AddBehavior("/:id", "DELETE", true);
+        this.AddBehavior("/", "GETALL", true);
+        this.AddBehavior("/", "POST", false);
+        // this.AddBehavior("/generateLink/:email", "POST", false, this.generateLink);
+    }
 
     // public generateLink(req: Request, res: Response) {
 

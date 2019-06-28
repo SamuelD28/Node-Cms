@@ -22,6 +22,7 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+app.use("/user", new UserApi(database, "user").GetRoutes());
 
 // -- Listener -- //
 app.listen(8888, "localhost", (error: string) => {

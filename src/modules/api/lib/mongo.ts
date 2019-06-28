@@ -138,11 +138,10 @@ export abstract class CrudApi {
                 if (!document) {
                     throw new Error("No document found");
                 } else {
-                    this.SendResponse(res,
-                        {
-                            status: 200,
-                            data: document
-                        });
+                    this.SendResponse(res, {
+                        status: 200,
+                        data: document
+                    });
                 }
             });
     }
@@ -190,11 +189,10 @@ export abstract class CrudApi {
                 if (!document) {
                     throw new Error("Can't update document");
                 } else {
-                    this.SendResponse(res,
-                        {
-                            status: 200,
-                            data: document
-                        });
+                    this.SendResponse(res, {
+                        status: 200,
+                        data: document
+                    });
                 }
             });
     }
