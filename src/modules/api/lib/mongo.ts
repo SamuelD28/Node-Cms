@@ -16,7 +16,7 @@ import { MongoDatabase } from '../../database';
  */
 export abstract class CrudApi {
     protected Collection: string;
-    protected Database: MongoDatabase;
+    protected DbAdapter: MongoDatabase;
     protected Routing: Router = Express.Router();
     protected Behaviors: { [index: string]: IBehaviorHandler };
 
@@ -30,7 +30,7 @@ export abstract class CrudApi {
      */
     constructor(database: MongoDatabase, collection: string) {
         this.Collection = collection;
-        this.Database = database;
+        this.DbAdapter = database;
 
         // Basic handlers for api
         this.Post = this.Post.bind(this);
@@ -107,21 +107,17 @@ export abstract class CrudApi {
      */
     public GetAll(req: Request, res: Response)
         : void {
-
-        // this.Document.find()
-        //     .then((documents) => {
-        //         if (!documents) {
-        //             throw new Error("No Document found");
-        //         }
-        //         this.SendResponse(res,
-        //             {
-        //                 status: 200,
-        //                 data: document
-        //             });
-        //     })
-        //     .catch((err) => {
-        //         res.json(err);
-        //     });
+        this.DbAdapter.GetDocumentsInCollection(this.Collection, (documents) => {
+            if (!documents) {
+                throw new Error("No Document Found");
+            } else {
+                this.SendResponse(res,
+                    {
+                        status: 200,
+                        data: documents
+                    });
+            }
+        });
     }
 
     /**
@@ -133,20 +129,21 @@ export abstract class CrudApi {
     */
     public Get(req: Request, res: Response)
         : void {
-        // this.Document.findById(req.params.id)
-        //     .then((document) => {
-        //         if (!document) {
-        //             throw new Error("No Document found");
-        //         }
-        //         this.SendResponse(res,
-        //             {
-        //                 status: 200,
-        //                 data: document
-        //             });
-        //     })
-        //     .catch((err) => {
-        //         res.json(err);
-        //     });
+        this.DbAdapter.GetDocumentInCollection(
+            this.Collection,
+            (document) => {
+                if (!document) {
+                    throw new Error("No document found");
+                } else {
+                    this.SendResponse(res,
+                        {
+                            status: 200,
+                            data: document
+                        });
+                }
+            },
+            { _id: req.params.id }
+        );
     }
 
     /**
@@ -158,29 +155,21 @@ export abstract class CrudApi {
      */
     public Post(req: Request, res: Response)
         : void {
-        // this.Document.create(req.body)
-        //     .then((document) => {
-        //         if (!document) {
-        //             throw new Error("No Document found");
-        //         }
-        //         this.SendResponse(res,
-        //             {
-        //                 status: 200,
-        //                 data: document
-        //             });
-        //     })
-        //     .catch((err: Error) => {
-        //         this.SendResponse(res,
-        //             {
-        //                 status: 404,
-        //                 data: null,
-        //                 error: {
-        //                     type: err.name,
-        //                     message: err.message,
-        //                     parameters: "no parameters"
-        //                 }
-        //             });
-        //     });
+        this.DbAdapter.InsertInCollection(
+            this.Collection,
+            req.params.body,
+            (document) => {
+                if (!document) {
+                    throw new Error("Can't create document");
+                } else {
+                    this.SendResponse(res,
+                        {
+                            status: 200,
+                            data: document
+                        });
+                }
+            }
+        )
     };
 
     /**
@@ -192,29 +181,22 @@ export abstract class CrudApi {
      */
     public Put(req: Request, res: Response)
         : void {
-        // this.Document.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
-        //     .then((document) => {
-        //         if (!document) {
-        //             throw new Error("No Document found");
-        //         }
-        //         this.SendResponse(res,
-        //             {
-        //                 status: 200,
-        //                 data: document
-        //             });
-        //     })
-        //     .catch((err) => {
-        //         this.SendResponse(res,
-        //             {
-        //                 status: 404,
-        //                 data: null,
-        //                 error: {
-        //                     type: err.name,
-        //                     message: err.message,
-        //                     parameters: "no parameters"
-        //                 }
-        //             });
-        //     });
+        this.DbAdapter.UpdateInCollection(
+            this.Collection,
+            { _id: req.params.id },
+            req.params.body,
+            (document) => {
+                if (!document) {
+                    throw new Error("Can't update document");
+                } else {
+                    this.SendResponse(res,
+                        {
+                            status: 200,
+                            data: document
+                        });
+                }
+            }
+        );
     }
 
     /**

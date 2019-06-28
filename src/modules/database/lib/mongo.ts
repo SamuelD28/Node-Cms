@@ -30,19 +30,24 @@ class MongoDatabase {
      *
      * @param action Callback function to pass the database object to.
      */
-    public async GetDb(action: (db: Db) => void)
-        : Promise<boolean> {
+    public async GetDb()
+        : Promise<Db> {
 
-        //Lazy initialisation
-        if (this.Client === null) {
-            this.Client = await new MongoClient(
-                this.ConnectionString,
-                { useNewUrlParser: true })
-                .connect();
-        }
+        return new Promise(async (resolve, reject) => {
+            //Lazy initialisation
+            if (this.Client === null) {
+                this.Client = await new MongoClient(
+                    this.ConnectionString,
+                    { useNewUrlParser: true })
+                    .connect();
+            }
 
-        action(this.Client.db(this.DbName));
-        return true;
+            if (!this.Client.isConnected()) {
+                reject("Cant establish connection with the database");
+            }
+
+            resolve(this.Client.db(this.DbName));
+        });
     }
 
     /**
@@ -52,13 +57,17 @@ class MongoDatabase {
      * @param name Name of the collection to retrieve
      * @param action Callback function to pass the collection object to.
      */
-    public GetCollection(name: string, action: (collection: Collection) => void)
-        : boolean {
-        this.GetDb((db) => {
-            action(db.collection(name));
+    public GetCollection(name: string)
+        : Promise<Collection> {
+
+        return new Promise((resolve) => {
+            this.GetDb()
+                .then((db) => {
+                    resolve(db.collection(name));
+                });
         });
-        return true;
     }
+
 
     /**
      * @description Method that create a new collection inside a database
@@ -66,11 +75,52 @@ class MongoDatabase {
      * @param name Name of the collection to create
      */
     public CreateCollection(name: string)
-        : boolean {
-        this.GetDb((db) => {
-            db.createCollection(name);
+        : Promise<Collection> {
+
+        return new Promise((resolve) => {
+            this.GetDb()
+                .then((db) => {
+                    resolve(db.createCollection(name));
+                });
         });
-        return true;
+    }
+
+    /**
+     * @description Method that retrieve a single document from the collection
+     *
+     * @param name Name of the collection
+     * @param action Callback function to be pass
+     * @param predicate Predicate for finding the document
+     */
+    public GetDocumentInCollection(name: string, predicate: object)
+        : Promise<{ [key: string]: any }> {
+
+        return new Promise((resolve) => {
+            this.GetCollection(name)
+                .then((collection) => {
+                    resolve(collection.findOne(predicate));
+                });
+        })
+    }
+
+    /**
+     * @description Method that retrieve multiples documents from the collection
+     *
+     * @param name Name of the collection
+     * @param action Callback function to be pass
+     * @param predicate Optionnal predicate for finding documents
+     */
+    public GetDocumentsInCollection(name: string, predicate?: object)
+        : Promise<Array<{ [key: string]: any }>> {
+
+        return new Promise((resolve) => {
+            this.GetCollection(name)
+                .then((collection) => {
+                    predicate
+                        ? resolve(collection.find(predicate).toArray())
+                        : resolve(collection.find().toArray());
+                });
+        });
     }
 
     /**
@@ -79,16 +129,19 @@ class MongoDatabase {
      * @param name Name of the collection to insert the data into
      * @param data Data to insert inside the collection
      */
-    public InsertInCollection(name: string, data: Object | Array<any>)
-        : boolean {
-        this.GetCollection(name, (collection) => {
-            if (data instanceof Object) {
-                collection.insertOne(data);
-            } else {
-                collection.insertMany(data);
-            }
-        })
-        return true;
+    public InsertInCollection(name: string, data: object | Array<any>)
+        : Promise<{ [key: string]: any }> {
+
+        return new Promise((resolve) => {
+            this.GetCollection(name)
+                .then(async (collection) => {
+                    let result =
+                        data instanceof Object
+                            ? await collection.insertOne(data)
+                            : await collection.insertMany(data);
+                    resolve(result);
+                })
+        });
     }
 
     /**
@@ -98,12 +151,16 @@ class MongoDatabase {
      * @param name Name of the collection to remove the data from
      * @param condition Condition for removing the data
      */
-    public DeleteInCollection(name: string, condition: Object)
-        : boolean {
-        this.GetCollection(name, (collection) => {
-            collection.deleteMany(condition);
+    public DeleteInCollection(name: string, condition: object)
+        : Promise<{ [key: string]: any }> {
+
+        return new Promise((resolve) => {
+            this.GetCollection(name)
+                .then(async (collection) => {
+                    let result = await collection.deleteMany(condition);
+                    resolve(result);
+                });
         });
-        return true;
     }
 
     /**
@@ -111,15 +168,19 @@ class MongoDatabase {
      * inside a collection
      *
      * @param name Name of the collection
-     * @param condition Condition for updating a data set
+     * @param predicate Predicate for selecting a document for update
      * @param data New data to override the old data with
      */
-    public UpdateInCollection(name: string, condition: Object, data: Object)
-        : boolean {
-        this.GetCollection(name, (collection) => {
-            collection.updateOne(condition, data);
+    public UpdateInCollection(name: string, predicate: object, data: object)
+        : Promise<{ [key: string]: any }> {
+
+        return new Promise((resolve) => {
+            this.GetCollection(name)
+                .then(async (collection) => {
+                    let result = await collection.updateOne(predicate, data);
+                    resolve(result);
+                });
         });
-        return true;
     }
 }
 
