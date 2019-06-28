@@ -107,17 +107,18 @@ export abstract class CrudApi {
      */
     public GetAll(req: Request, res: Response)
         : void {
-        this.DbAdapter.GetDocumentsInCollection(this.Collection, (documents) => {
-            if (!documents) {
-                throw new Error("No Document Found");
-            } else {
-                this.SendResponse(res,
-                    {
+
+        this.DbAdapter.GetDocumentsInCollection(this.Collection)
+            .then((documents) => {
+                if (!documents) {
+                    throw new Error("No Document Found");
+                } else {
+                    this.SendResponse(res, {
                         status: 200,
                         data: documents
                     });
-            }
-        });
+                }
+            });
     }
 
     /**
@@ -129,9 +130,11 @@ export abstract class CrudApi {
     */
     public Get(req: Request, res: Response)
         : void {
+
         this.DbAdapter.GetDocumentInCollection(
             this.Collection,
-            (document) => {
+            { _id: req.params.id })
+            .then((document) => {
                 if (!document) {
                     throw new Error("No document found");
                 } else {
@@ -141,9 +144,7 @@ export abstract class CrudApi {
                             data: document
                         });
                 }
-            },
-            { _id: req.params.id }
-        );
+            });
     }
 
     /**
@@ -155,22 +156,21 @@ export abstract class CrudApi {
      */
     public Post(req: Request, res: Response)
         : void {
+
         this.DbAdapter.InsertInCollection(
             this.Collection,
-            req.params.body,
-            (document) => {
+            req.params.body)
+            .then((document) => {
                 if (!document) {
                     throw new Error("Can't create document");
                 } else {
-                    this.SendResponse(res,
-                        {
-                            status: 200,
-                            data: document
-                        });
+                    this.SendResponse(res, {
+                        status: 200,
+                        data: document
+                    });
                 }
-            }
-        )
-    };
+            });
+    }
 
     /**
      * @description Put new information on an existing model inside
@@ -181,11 +181,12 @@ export abstract class CrudApi {
      */
     public Put(req: Request, res: Response)
         : void {
+
         this.DbAdapter.UpdateInCollection(
             this.Collection,
             { _id: req.params.id },
-            req.params.body,
-            (document) => {
+            req.params.body)
+            .then((document) => {
                 if (!document) {
                     throw new Error("Can't update document");
                 } else {
@@ -195,8 +196,7 @@ export abstract class CrudApi {
                             data: document
                         });
                 }
-            }
-        );
+            });
     }
 
     /**
@@ -208,29 +208,19 @@ export abstract class CrudApi {
      */
     public Delete(req: Request, res: Response)
         : void {
-        // this.Document.findByIdAndDelete(req.params.id)
-        //     .then((document) => {
-        //         if (!document) {
-        //             throw new Error("No Document found");
-        //         }
-        //         this.SendResponse(res,
-        //             {
-        //                 status: 200,
-        //                 data: document
-        //             });
-        //     })
-        //     .catch((err) => {
-        //         this.SendResponse(res,
-        //             {
-        //                 status: 404,
-        //                 data: null,
-        //                 error: {
-        //                     type: err.name,
-        //                     message: err.message,
-        //                     parameters: "no parameters"
-        //                 }
-        //             });
-        //     });
+
+        this.DbAdapter.DeleteInCollection(
+            this.Collection,
+            { _id: req.params.id })
+            .then((document) => {
+                if (!document) {
+                    throw new Error("No Document found");
+                }
+                this.SendResponse(res, {
+                    status: 200,
+                    data: document
+                });
+            });
     }
 
     /**
