@@ -13,7 +13,6 @@ class User {
     private Token: string;
 
     constructor(username: string, email: string, password: string) {
-        console.log("username : " + username, "email : " + email, "password : " + password);
         this.Id = uuidv1();
         this.Email = email;
         this.Username = username;

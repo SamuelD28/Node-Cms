@@ -139,7 +139,7 @@ export abstract class BaseApi {
 
         this.DbAdapter.GetDocumentInCollection(
             this.CollectionName,
-            { _id: req.params.id })
+            { id: req.params.id })
             .then((document) => {
                 if (!document) {
                     throw new Error("No document found");
@@ -163,13 +163,15 @@ export abstract class BaseApi {
         : void {
 
         //Parse the data as arguments
-        let values: Array<any> = [];
-        Object.keys(req.body).forEach((key) => {
-            values.push(req.body[key]);
-        });
+        let values: Array<any> = Object.values(req.body);
 
         //Attempts to create a new object with the parsed arguments
         let newDocument = new this.CollectionModel(...values);
+
+        /**
+         * @todo : Add error handling
+         * @todo : Save object functions
+         */
 
         this.DbAdapter.InsertInCollection(
             this.CollectionName,
@@ -195,6 +197,8 @@ export abstract class BaseApi {
      */
     public Put(req: Request, res: Response)
         : void {
+
+
 
         this.DbAdapter.UpdateInCollection(
             this.CollectionName,

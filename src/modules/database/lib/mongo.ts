@@ -60,10 +60,23 @@ class MongoDatabase {
     public GetCollection(name: string)
         : Promise<Collection> {
 
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             this.GetDb()
                 .then((db) => {
-                    resolve(db.collection(name));
+                    let col: Collection | null = null;
+                    db.collection(name,
+                        { strict: true },
+                        (err, collection) => {
+                            if (err) {
+                                this.CreateCollection(name)
+                                    .then((collection) => {
+                                        col = collection;
+                                    });
+                            } else {
+                                col = collection;
+                            }
+                        });
+                    col ? resolve(col) : reject("Can't create collection");
                 });
         });
     }
@@ -80,7 +93,7 @@ class MongoDatabase {
         return new Promise((resolve) => {
             this.GetDb()
                 .then((db) => {
-                    resolve(db.createCollection(name));
+                    resolve(db.createCollection(name, { autoIndexId: false }));
                 });
         });
     }
