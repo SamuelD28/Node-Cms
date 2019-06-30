@@ -1,9 +1,8 @@
 import User from './model';
-import { CrudApi } from '../../api/lib/mongo';
-import { Request, Response } from 'express-serve-static-core';
+import { BaseApi } from '../../api';
 import { MongoDatabase } from '../../database';
-export default class Api extends CrudApi<User>{
 
+export default class Api extends BaseApi {
     constructor(database: MongoDatabase, collection: string) {
         super(database, collection, User);
         // this.Login = this.Login.bind(this);

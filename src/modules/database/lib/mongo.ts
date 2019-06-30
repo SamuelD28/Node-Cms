@@ -129,7 +129,7 @@ class MongoDatabase {
      * @param name Name of the collection to insert the data into
      * @param data Data to insert inside the collection
      */
-    public InsertInCollection(name: string, data: object | Array<any>)
+    public InsertInCollection(name: string, data: object | Array<object>)
         : Promise<{ [key: string]: any }> {
 
         return new Promise((resolve) => {

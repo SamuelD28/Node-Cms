@@ -14,9 +14,9 @@ import { MongoDatabase } from '../../database';
  * @author Samuel Dube
  * @author Samuel Colassin
  */
-export abstract class CrudApi<T>{
+export abstract class BaseApi {
     public CollectionName: string;
-    protected CollectionModel: { new(...args: any[]): T };
+    protected CollectionModel: { new(...args: any[]): object };
     protected DbAdapter: MongoDatabase;
     protected Routing: Router = Express.Router();
     protected Behaviors: { [index: string]: IBehaviorHandler };
@@ -32,7 +32,7 @@ export abstract class CrudApi<T>{
     constructor(
         database: MongoDatabase,
         collectionName: string,
-        collectionModel: { new(...args: any[]): T }) {
+        collectionModel: { new(...arg: any[]): object }) {
 
         this.CollectionName = collectionName;
         this.DbAdapter = database;
@@ -162,11 +162,18 @@ export abstract class CrudApi<T>{
     public Post(req: Request, res: Response)
         : void {
 
-        let newDocument = new this.CollectionModel(req.body.params);
+        //Parse the data as arguments
+        let values: Array<any> = [];
+        Object.keys(req.body).forEach((key) => {
+            values.push(req.body[key]);
+        });
+
+        //Attempts to create a new object with the parsed arguments
+        let newDocument = new this.CollectionModel(...values);
 
         this.DbAdapter.InsertInCollection(
             this.CollectionName,
-            req.params.body)
+            newDocument)
             .then((document) => {
                 if (!document) {
                     throw new Error("Can't create document");
