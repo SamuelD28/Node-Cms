@@ -139,7 +139,7 @@ export abstract class BaseApi {
 
         this.DbAdapter.GetDocumentInCollection(
             this.CollectionName,
-            { id: req.params.id })
+            { _id: req.params.id })
             .then((document) => {
                 if (!document) {
                     throw new Error("No document found");
@@ -198,12 +198,10 @@ export abstract class BaseApi {
     public Put(req: Request, res: Response)
         : void {
 
-
-
         this.DbAdapter.UpdateInCollection(
             this.CollectionName,
             { _id: req.params.id },
-            req.params.body)
+            { $set: { ...req.body } })
             .then((document) => {
                 if (!document) {
                     throw new Error("Can't update document");

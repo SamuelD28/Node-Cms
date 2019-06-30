@@ -63,20 +63,19 @@ class MongoDatabase {
         return new Promise((resolve, reject) => {
             this.GetDb()
                 .then((db) => {
-                    let col: Collection | null = null;
                     db.collection(name,
                         { strict: true },
-                        (err, collection) => {
+                        async (err, collection) => {
+                            let col: Collection | null = null;
+
                             if (err) {
-                                this.CreateCollection(name)
-                                    .then((collection) => {
-                                        col = collection;
-                                    });
+                                col = await this.CreateCollection(name);
                             } else {
                                 col = collection;
                             }
+
+                            col === null ? reject("Can't create collection") : resolve(col);
                         });
-                    col ? resolve(col) : reject("Can't create collection");
                 });
         });
     }
@@ -93,7 +92,7 @@ class MongoDatabase {
         return new Promise((resolve) => {
             this.GetDb()
                 .then((db) => {
-                    resolve(db.createCollection(name, { autoIndexId: false }));
+                    resolve(db.createCollection(name));
                 });
         });
     }
@@ -191,6 +190,7 @@ class MongoDatabase {
             this.GetCollection(name)
                 .then(async (collection) => {
                     let result = await collection.updateOne(predicate, data);
+                    console.log(result);
                     resolve(result);
                 });
         });

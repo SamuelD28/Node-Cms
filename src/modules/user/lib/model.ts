@@ -6,19 +6,19 @@ import uuidv1 from 'uuid/v1';
  * User Schema that will be stored in the database
  */
 class User {
-    private Id: string;
+    private _id: string;
     private Username: string;
     private Email: string;
     private Password: string;
     private Token: string;
 
     constructor(username: string, email: string, password: string) {
-        this.Id = uuidv1();
+        this._id = uuidv1();
         this.Email = email;
         this.Username = username;
         this.Token = "";
 
-        let saltLength = this.GetSaltLength(this.Id);
+        let saltLength = this.GetSaltLength(this._id);
         let salt = this.GenerateSalt(saltLength);
         this.Password = this.HashPassword(password, salt);
     }
@@ -83,7 +83,7 @@ class User {
     PasswordMatch(password: string)
         : boolean {
         let passwordLength = this.Password.length;
-        let saltLength = this.GetSaltLength(this.Id);
+        let saltLength = this.GetSaltLength(this._id);
 
         let passwordStored = this.Password.substring(0, passwordLength - saltLength);
         let saltStored = this.Password.substring(passwordLength - saltLength, passwordLength);
@@ -99,7 +99,7 @@ class User {
      */
     SaveToken()
         : void {
-        this.Token = Jwt.sign(this.Id, <string>process.env.SECRET);
+        this.Token = Jwt.sign(this._id, <string>process.env.SECRET);
     }
 
     /**
